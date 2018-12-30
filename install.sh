@@ -55,7 +55,7 @@ case $key in
     -h|--help)
     cat << EOL
 
-NORT Masternode installer arguments:
+LON Masternode installer arguments:
 
     -n --normal               : Run installer in normal mode
     -a --advanced             : Run installer in advanced mode
@@ -82,9 +82,9 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 clear
 
-# Set these to change the version of northern to install
-TARBALLURL="https://github.com/zabtc/Northern/releases/download/1.0.0/northern-1.0.0-x86_64-linux-gnu.tar.gz"
-TARBALLNAME="northern-1.0.0-x86_64-linux-gnu.tar.gz"
+# Set these to change the version of londinium to install
+TARBALLURL="https://github.com/londiniumcrypto/Londinium/releases/download/2.0.0/londinium-2.0.0-x86_64-linux-gnu.tar.gz"
+TARBALLNAME="londinium-2.0.0-x86_64-linux-gnu.tar.gz"
 BOOTSTRAPURL=""
 BOOTSTRAPARCHIVE=""
 BWKVERSION="1.0.0"
@@ -131,7 +131,7 @@ echo "
  |               installation method.               |::
  |                                                  |::
  |  Otherwise, your masternode will not work, and   |::
- | the NORT Team CANNOT assist you in repairing  |::
+ | the LON Team CANNOT assist you in repairing  |::
  |         it. You will have to start over.         |::
  |                                                  |::
  +------------------------------------------------+::
@@ -148,13 +148,13 @@ fi
 
 if [[ ("$ADVANCED" == "y" || "$ADVANCED" == "Y") ]]; then
 
-USER=northern
+USER=londinium
 
 adduser $USER --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password > /dev/null
 
 INSTALLERUSED="#Used Advanced Install"
 
-echo "" && echo 'Added user "northern"' && echo ""
+echo "" && echo 'Added user "londinium"' && echo ""
 sleep 1
 
 else
@@ -216,30 +216,30 @@ if [[ ("$UFW" == "y" || "$UFW" == "Y" || "$UFW" == "") ]]; then
   ufw default deny incoming
   ufw default allow outgoing
   ufw allow ssh
-  ufw allow 6942/tcp
+  ufw allow 9555/tcp
   yes | ufw enable
 fi
 
-# Install NORT daemon
+# Install LON daemon
 wget $TARBALLURL
 tar -xzvf $TARBALLNAME 
 rm $TARBALLNAME
-mv ./northernd /usr/local/bin
-mv ./northern-cli /usr/local/bin
-mv ./northern-tx /usr/local/bin
+mv ./londiniumd /usr/local/bin
+mv ./londinium-cli /usr/local/bin
+mv ./londinium-tx /usr/local/bin
 rm -rf $TARBALLNAME
 
-# Create .northern directory
-mkdir $USERHOME/.northern
+# Create .londinium directory
+mkdir $USERHOME/.londinium
 
 # Install bootstrap file
 if [[ ("$BOOTSTRAP" == "y" || "$BOOTSTRAP" == "Y" || "$BOOTSTRAP" == "") ]]; then
   echo "skipping"
 fi
 
-# Create northern.conf
-touch $USERHOME/.northern/northern.conf
-cat > $USERHOME/.northern/northern.conf << EOL
+# Create londinium.conf
+touch $USERHOME/.londinium/londinium.conf
+cat > $USERHOME/.londinium/londinium.conf << EOL
 ${INSTALLERUSED}
 rpcuser=${RPCUSER}
 rpcpassword=${RPCPASSWORD}
@@ -250,44 +250,37 @@ daemon=1
 logtimestamps=1
 maxconnections=256
 externalip=${IP}
-bind=${IP}:6942
+bind=${IP}:9555
 masternodeaddr=${IP}
 masternodeprivkey=${KEY}
 masternode=1
-addnode=207.246.69.246
-addnode=209.250.233.104
-addnode=45.77.82.101
-addnode=138.68.167.127
-addnode=45.77.218.53
-addnode=207.246.86.118
-addnode=128.199.44.28
-addnode=139.59.164.167
-addnode=139.59.177.56
-addnode=206.189.58.89
-addnode=207.154.202.113
-addnode=140.82.54.227
+addnode=104.238.187.178
+addnode=45.76.131.22
+addnode=68.183.219.218
+addnode=68.183.219.25
+
 EOL
-chmod 0600 $USERHOME/.northern/northern.conf
-chown -R $USER:$USER $USERHOME/.northern
+chmod 0600 $USERHOME/.londinium/londinium.conf
+chown -R $USER:$USER $USERHOME/.londinium
 
 sleep 1
 
-cat > /etc/systemd/system/northern.service << EOL
+cat > /etc/systemd/system/londinium.service << EOL
 [Unit]
-Description=northernd
+Description=londiniumd
 After=network.target
 [Service]
 Type=forking
 User=${USER}
 WorkingDirectory=${USERHOME}
-ExecStart=/usr/local/bin/northernd -conf=${USERHOME}/.northern/northern.conf -datadir=${USERHOME}/.northern
-ExecStop=/usr/local/bin/northern-cli -conf=${USERHOME}/.northern/northern.conf -datadir=${USERHOME}/.northern stop
+ExecStart=/usr/local/bin/londiniumd -conf=${USERHOME}/.londinium/londinium.conf -datadir=${USERHOME}/.londinium
+ExecStop=/usr/local/bin/londinium-cli -conf=${USERHOME}/.londinium/londinium.conf -datadir=${USERHOME}/.londinium stop
 Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 EOL
-sudo systemctl enable northern.service
-sudo systemctl start northern.service
+sudo systemctl enable londinium.service
+sudo systemctl start londinium.service
 
 clear
 
